@@ -15,8 +15,8 @@ unsigned long t; // time since commencment
 unsigned long last; // time since last count
 int interval = 50; // count interval
 
-int SW[] = {2,3,4,5,6,7};
-int LED[] = {8,9,10,11,12,13};
+int SW[] = {2,3,4,5,6,7,8};
+int LED[] = {9,10,11,12,13};
 int nSW = sizeof(SW) / sizeof(int);
 int nLED = sizeof(LED) / sizeof(int);
 int ramp;
@@ -66,6 +66,9 @@ void loop() {
 void depressed(int sw) {
    Serial.print(sw);
    switch(sw){
+     case 6:
+      emergencyStop(6);
+      break;
      case 0:
       buttonZero();
       break;
@@ -134,7 +137,7 @@ void buttonThree() {
   if (phase == 2) {
     phase = 3;
     Serial.println("Phase 3: Ramping down, forward");
-    illuminate(4);
+    illuminate(3);
     ramp = -1;
   } else if (phase == 5) {
     phase = 6;
@@ -149,7 +152,7 @@ void buttonFour() {
   if (phase == 3) {
     phase = 4;
     Serial.println("Phase 4: Full Stop, far end");
-    illuminate(5);
+    illuminate(4);
     M1->run(RELEASE);
     M1s = 0;
     ramp = 0;
@@ -160,7 +163,7 @@ void buttonFive() {
   if (phase == 4) {
     phase = 5;
     Serial.println("Phase 5: Ramping up, backward");
-    illuminate(4);
+    illuminate(3);
     M1->run(BACKWARD);
     M1s = 100;
     ramp = 1;
@@ -173,8 +176,9 @@ void emergencyStop(int wrongButton) {
   ramp = 0;
   Serial.print("Emergency stop in phase: ");
   Serial.println(phase);
-  Serial.print("Button pressed out of turn: ");
+  Serial.print("Button pressed: ");
   Serial.println(wrongButton);
+  phase = 0;
 }
 
 void illuminate( int n) {
@@ -185,9 +189,9 @@ void illuminate( int n) {
       digitalWrite(LED[i], LOW);
     }
   }
-  if( n == 2) {
-    digitalWrite(LED[3], HIGH);
-  }
+//  if( n == 2) {
+//    digitalWrite(LED[3], HIGH);
+//  }
 }
 
 
