@@ -1,3 +1,5 @@
+#include <Bounce2.h>
+
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 
@@ -19,31 +21,33 @@ int nSW = sizeof(SW) / sizeof(int);
 int nLED = sizeof(LED) / sizeof(int);
 int ramp;
 
+Bounce * sw = new Bounce[nSW];
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Begining setup");
   AFMS.begin();
 
   for(i = 0; i < nSW; i++) {
-    pinMode(SW[i], INPUT_PULLUP);
+//    pinMode(SW[i], INPUT_PULLUP);
+    sw[i].attach(SW[i], INPUT_PULLUP);
+    sw[i].interval(1);
   }
   for(i = 0; i < nLED; i++) {
     pinMode(LED[i], OUTPUT);
   }
   phase = 0;
-  Serial.println("Setup complete");
-  
-//  for(i = 3; i > 0; i--) {
-//    Serial.println(i);
-//    delay(1000);
-//  }
-//  buttonZero();
+  Serial.println("Setup complete (bounc2)");
   illuminate(0);
 }
 
 void loop() {
  for(i = 0; i< nSW; i++) {
-    if(digitalRead(SW[i]) == LOW) {
+//    if(digitalRead(SW[i]) == LOW) {
+//      depressed(i);
+//    }
+    sw[i].update();
+    if(sw[i].fell()) {
       depressed(i);
     }
   }
@@ -60,7 +64,7 @@ void loop() {
 }
 
 void depressed(int sw) {
-//   Serial.println(sw);
+   Serial.print(sw);
    switch(sw){
      case 0:
       buttonZero();
@@ -161,6 +165,16 @@ void buttonFive() {
     M1s = 100;
     ramp = 1;
   }
+}
+
+void emergencyStop(int wrongButton) {
+  M1->run(RELEASE);
+  M1s = 0;
+  ramp = 0;
+  Serial.print("Emergency stop in phase: ");
+  Serial.println(phase);
+  Serial.print("Button pressed out of turn: ");
+  Serial.println(wrongButton);
 }
 
 void illuminate( int n) {
